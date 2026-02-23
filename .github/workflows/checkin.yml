@@ -25,11 +25,10 @@ jobs:
           dailycheckin > output.log 2>&1
           cat output.log
           
-          # 优化：只提取关键的签到结果，并去除可能的非法字符
-          RESULT=$(tail -n 5 output.log | tr -d '\n\r' | sed 's/"//g')
+          # 提取结果并压缩成一行，防止 JSON 格式崩溃
+          RESULT=$(tail -n 5 output.log | tr -d '\n\r"' | sed 's/\\//g')
           
-          # 修正：确保 URL 格式严丝合缝
-          # 注意：请确保你的 Secret: QYWX_KEY 里面只有那串 ID
-          curl -X POST "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${QYWX_KEY}" \
-           -H 'Content-Type: application/json' \
-           -d "{\"msgtype\": \"text\", \"text\": {\"content\": \"什么值得买签到任务完成。\n$RESULT\"}}"
+          # 直接使用环境变量名 QYWX_KEY
+          curl -s -X POST "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=$QYWX_KEY" \
+            -H 'Content-Type: application/json' \
+            -d "{\"msgtype\": \"text\", \"text\": {\"content\": \"什么值得买签到任务完成。\n详情: $RESULT\"}}"
