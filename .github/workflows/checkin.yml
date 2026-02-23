@@ -19,4 +19,7 @@ jobs:
       - name: Run
         env:
           CHECKIN_CONFIG: ${{ secrets.CHECKIN_CONFIG }}
-        run: dailycheckin --config "$CHECKIN_CONFIG" --include SMZDM
+        run: |
+          # 将 Secret 内容写入临时文件再运行，这是最稳妥的办法
+          echo "$CHECKIN_CONFIG" > config.json
+          dailycheckin
