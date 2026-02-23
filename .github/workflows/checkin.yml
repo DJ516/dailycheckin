@@ -20,6 +20,7 @@ jobs:
         env:
           CHECKIN_CONFIG: ${{ secrets.CHECKIN_CONFIG }}
         run: |
-          # 将 Secret 内容写入临时文件再运行，这是最稳妥的办法
+          # 1. 将加密的 Secret 写入本地配置文件
           echo "$CHECKIN_CONFIG" > config.json
+          # 2. 直接运行 dailycheckin，它会自动读取当前目录下的 config.json
           dailycheckin
