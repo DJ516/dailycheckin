@@ -20,7 +20,6 @@ jobs:
         env:
           CHECKIN_CONFIG: ${{ secrets.CHECKIN_CONFIG }}
         run: |
-          # 1. 将加密的 Secret 写入本地配置文件
           echo "$CHECKIN_CONFIG" > config.json
-          # 2. 直接运行 dailycheckin，它会自动读取当前目录下的 config.json
-          dailycheckin
+          # 增加 --debug 参数查看推送失败的具体原因
+          dailycheckin --debug
