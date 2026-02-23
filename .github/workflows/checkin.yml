@@ -18,22 +18,18 @@ jobs:
         run: pip install dailycheckin --upgrade
       - name: Run
         env:
-          # 从 Secret 安全读取配置
           CHECKIN_CONFIG: ${{ secrets.CHECKIN_CONFIG }}
-          # 从 Secret 安全读取企业微信 KEY
           QYWX_KEY: ${{ secrets.QYWX_KEY }}
         run: |
-          # 1. 临时生成配置文件（运行完会被虚拟机自动销毁）
           echo "$CHECKIN_CONFIG" > config.json
-          
-          # 2. 执行签到并将结果保存，cat 用于在日志看状态，Secret 会被自动打码
           dailycheckin > output.log 2>&1
           cat output.log
           
-          # 3. 提取签到结果的最后几行状态（过滤掉可能包含敏感信息的全文）
-          RESULT=$(tail -n 10 output.log | tr -d '\n' | sed 's/"//g')
+          # 优化：只提取关键的签到结果，并去除可能的非法字符
+          RESULT=$(tail -n 5 output.log | tr -d '\n\r' | sed 's/"//g')
           
-          # 4. 原生 curl 推送，Key 隐藏在环境变量中
-          curl "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=$QYWX_KEY" \
+          # 修正：确保 URL 格式严丝合缝
+          # 注意：请确保你的 Secret: QYWX_KEY 里面只有那串 ID
+          curl -X POST "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${QYWX_KEY}" \
            -H 'Content-Type: application/json' \
-           -d "{\"msgtype\": \"text\", \"text\": {\"content\": \"什么值得买签到任务已完成。\n结果详情：$RESULT\"}}"
+           -d "{\"msgtype\": \"text\", \"text\": {\"content\": \"什么值得买签到任务完成。\n$RESULT\"}}"
