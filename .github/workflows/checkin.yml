@@ -2,8 +2,8 @@ name: DailyCheckIn
 
 on:
   schedule:
-    - cron: '30 0 * * *' # 北京时间 08:30 自动运行
-  workflow_dispatch: # 保留手动运行按钮
+    - cron: '30 0 * * *' # 北京时间 08:30
+  workflow_dispatch: # 支持手动触发
 
 jobs:
   build:
@@ -17,15 +17,15 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: |
-          pip install dailycheckin --upgrade
+        run: pip install dailycheckin --upgrade
 
-      - name: Run
+      - name: Run Task
         env:
+          # 核心：将 Secret 映射为脚本能直接读取的环境变量
           CHECKIN_CONFIG: ${{ secrets.CHECKIN_CONFIG }}
+          QYWX_KEY: ${{ secrets.QYWX_KEY }}
+          # 增加联动变量（部分版本脚本需要这个字段触发）
+          WECHAT_WEBHOOK_URL: ${{ secrets.QYWX_KEY }} 
         run: |
-          # 1. 只有这一行：将你的全能 JSON 写入配置文件
           echo "$CHECKIN_CONFIG" > config.json
-          
-          # 2. 只有这一行：执行签到。它会自动读取 JSON 里的 PUSH_CONFIG 完成推送
           dailycheckin
