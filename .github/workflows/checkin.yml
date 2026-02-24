@@ -3,7 +3,7 @@ name: DailyCheckIn
 on:
   schedule:
     - cron: '30 0 * * *' # 北京时间 08:30
-  workflow_dispatch: # 支持手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,11 +21,10 @@ jobs:
 
       - name: Run Task
         env:
-          # 核心：将 Secret 映射为脚本能直接读取的环境变量
           CHECKIN_CONFIG: ${{ secrets.CHECKIN_CONFIG }}
-          QYWX_KEY: ${{ secrets.QYWX_KEY }}
-          # 增加联动变量（部分版本脚本需要这个字段触发）
-          WECHAT_WEBHOOK_URL: ${{ secrets.QYWX_KEY }} 
+          # 核心修正：直接注入企业微信所需的精准变量名
+          WECHAT_WEBHOOK_URL: https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${{ secrets.QYWX_KEY }}
         run: |
+          # 确保环境变量中不含中文，防止 latin-1 报错
           echo "$CHECKIN_CONFIG" > config.json
           dailycheckin
