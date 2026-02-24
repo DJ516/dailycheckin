@@ -2,24 +2,30 @@ name: DailyCheckIn
 
 on:
   schedule:
-    - cron: '30 0 * * *' # 北京时间 8:30 运行
-  workflow_dispatch:
+    - cron: '30 0 * * *' # 北京时间 08:30 自动运行
+  workflow_dispatch: # 保留手动运行按钮
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Install dependencies
-        run: pip install dailycheckin --upgrade
+        run: |
+          pip install dailycheckin --upgrade
+
       - name: Run
         env:
           CHECKIN_CONFIG: ${{ secrets.CHECKIN_CONFIG }}
-          QYWX_KEY: ${{ secrets.QYWX_KEY }}
         run: |
-        echo "$CHECKIN_CONFIG" > config.json
-        dailycheckin
+          # 1. 只有这一行：将你的全能 JSON 写入配置文件
+          echo "$CHECKIN_CONFIG" > config.json
+          
+          # 2. 只有这一行：执行签到。它会自动读取 JSON 里的 PUSH_CONFIG 完成推送
+          dailycheckin
